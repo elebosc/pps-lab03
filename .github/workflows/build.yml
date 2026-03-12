@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    if: contains(github.repository, 'pps-lab02') && !github.event.repository.fork
+    if: contains(github.repository, 'pps-lab03') && !github.event.repository.fork
     strategy:
       fail-fast: false
       matrix:
