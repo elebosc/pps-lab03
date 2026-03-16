@@ -19,7 +19,7 @@ object ExtensionMethods extends App:
   println:
     5.mult2(3)
 
-  import u03.Sequences.*
+  import it.unibo.pps.task1.Sequences.*
   import Sequence.* 
 
   // cannot chain calls!
