@@ -5,8 +5,8 @@ object Streams:
   import it.unibo.pps.task1.Sequences.*
 
   enum Stream[A]:
-    private case Empty()
-    private case Cons(head: () => A, tail: () => Stream[A])
+    case Empty()
+    case Cons(head: () => A, tail: () => Stream[A])
 
   object Stream:
 

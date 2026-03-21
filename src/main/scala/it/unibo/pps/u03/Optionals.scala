@@ -1,4 +1,4 @@
-package u03
+package it.unibo.pps.u03
 
 // overall module
 object Optionals:
