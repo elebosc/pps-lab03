@@ -1,6 +1,6 @@
-package u03
+package it.unibo.pps.task3
 
-object Streams extends App :
+object Streams:
 
   import it.unibo.pps.task1.Sequences.*
 
@@ -36,10 +36,19 @@ object Streams extends App :
 
     def iterate[A](init: => A)(next: A => A): Stream[A] =
       cons(init, iterate(next(init))(next))
-
+    
+    def takeWhile[A](s: Stream[A])(pred: A => Boolean): Stream[A] = s match
+      case Empty() => Empty()
+      case Cons(h, t) if pred(h()) => cons(h(), takeWhile(t())(pred))
+      case _ => Empty()
+    
+    def fill[A](n: Int)(k: A): Stream[A] = n match
+      case 0 => Empty()
+      case x if x > 0 => cons(k, fill(n - 1)(k))
+  
   end Stream
 
-@main def tryStreams =
+@main def tryStreams(): Unit =
   import Streams.* 
 
   val str1 = Stream.iterate(0)(_ + 1) // {0,1,2,3,..}
