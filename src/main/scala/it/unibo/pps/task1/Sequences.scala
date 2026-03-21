@@ -1,10 +1,11 @@
 package it.unibo.pps.task1
 
 import u03.Optionals.Optional
+import u03.Optionals.Optional.{Empty, Just}
 
 import scala.annotation.tailrec
 
-object Sequences: // Essentially, generic linkedlists
+object Sequences: // Essentially, generic linked lists
   
   enum Sequence[E]:
     case Cons(head: E, tail: Sequence[E])
@@ -91,14 +92,27 @@ object Sequences: // Essentially, generic linkedlists
      * E.g., [30, 20, 10] => 10
      * E.g., [10, 1, 30] => 1
      */
-    def min(s: Sequence[Int]): Optional[Int] = ???
+    def min(s: Sequence[Int]): Optional[Int] =
+      @tailrec
+      def _min(s: Sequence[Int])(currentMin: Optional[Int]): Optional[Int] = (s, currentMin) match
+        case (Nil(), currMin) => currMin
+        case (Cons(h, t), Empty()) => _min(t)(Just(h))
+        case (Cons(h, t), Just(currMin)) if h < currMin => _min(t)(Just(h))
+        case (Cons(_, t), currMin) => _min(t)(currMin)
+      _min(s)(Empty())
 
     /*
      * Get the elements at even indices
      * E.g., [10, 20, 30] => [10, 30]
      * E.g., [10, 20, 30, 40] => [10, 30]
      */
-    def evenIndices[A](s: Sequence[A]): Sequence[A] = ???
+    def evenIndices[A](s: Sequence[A]): Sequence[A] =
+      @tailrec
+      def _evenIndices[B](s: Sequence[B])(acc: Sequence[B])(currIdx: Int): Sequence[B] = (s, acc, currIdx) match
+        case (Nil(), _, _) => acc
+        case (Cons(h, t), acc, idx) if idx % 2 == 0 => _evenIndices(t)(Cons(h, acc))(idx + 1)
+        case (Cons(_, t), acc, idx) => _evenIndices(t)(acc)(idx + 1)
+      _evenIndices(reverse(s))(Nil())(0)
 
     /*
      * Check if the sequence contains the element
@@ -130,16 +144,33 @@ object Sequences: // Essentially, generic linkedlists
      * E.g., [10, 20, 30] => [[10], [20], [30]]
      * E.g., [10, 20, 20, 30] => [[10], [20, 20], [30]]
      */
-    def group[A](s: Sequence[A]): Sequence[Sequence[A]] = ???
+    def group[A](s: Sequence[A]): Sequence[Sequence[A]] =
+      @tailrec
+      def _group[B](s: Sequence[B])(acc: Sequence[Sequence[B]])(prevElem: Optional[B]): Sequence[Sequence[B]] =
+        (s, acc, prevElem) match
+          case (Nil(), _, _) => acc
+          case (Cons(h, t), _, Empty()) => _group(t)(Cons(Cons(h, Nil()), Nil()))(Just(h))
+          case (Cons(h, t), Cons(hAcc, tAcc), Just(elem)) if h.equals(elem) =>
+            _group(t)(Cons(Cons(h, hAcc), tAcc))(Just(h))
+          case (Cons(h, t), acc, Just(_)) =>
+            _group(t)(concat(acc, Cons(Cons(h, Nil()), Nil())))(Just(h))
+      _group(s)(Nil())(Empty())
 
     /*
      * Partition the sequence into two sequences based on the predicate
      * E.g., [10, 20, 30] => ([10], [20, 30]) if pred is (_ < 20)
      * E.g., [11, 20, 31] => ([20], [11, 31]) if pred is (_ % 2 == 0)
      */
-    def partition[A](s: Sequence[A])(pred: A => Boolean): (Sequence[A], Sequence[A]) = ???
+    def partition[A](s: Sequence[A])(pred: A => Boolean): (Sequence[A], Sequence[A]) =
+      @tailrec
+      def _partition[B](s: Sequence[B])(pred: B => Boolean)(acc: (Sequence[B], Sequence[B])): (Sequence[B], Sequence[B]) =
+        (s, acc) match
+          case (Nil(), _) => acc
+          case (Cons(h, t), (s1, s2)) if pred(h) => _partition(t)(pred)(concat(s1, Cons(h, Nil())), s2)
+          case (Cons(h, t), (s1, s2)) => _partition(t)(pred)(s1, concat(s2, Cons(h, Nil())))
+      _partition(s)(pred)((Nil(), Nil()))
 
-@main def trySequences =
+@main def trySequences(): Unit =
   import Sequences.* 
   val l = Sequence.Cons(10, Sequence.Cons(20, Sequence.Cons(30, Sequence.Nil())))
   println(Sequence.sum(l)) // 30
